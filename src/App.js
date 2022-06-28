@@ -1,11 +1,23 @@
 // Imports
-import React from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import AllQuotes from "./pages/AllQuotes";
-import QuoteDetail from "./pages/QuoteDetail";
-import NewQuote from "./pages/NewQuote";
-import NotFound from "./pages/NotFound";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
+
+// Lazy loading, useful for refactoring graphoeil website ...
+// We only load <NewQuote/> component when user visit /new-quote
+const NewQuote = React.lazy(() => {
+	// We must add Suspense component because React must
+	// render something while downloading NewQuote
+	return import('./pages/NewQuote');
+});
+const QuoteDetail = React.lazy(() => {
+	return import('./pages/QuoteDetail');
+});
+const NotFound = React.lazy(() => {
+	return import('./pages/NotFound');
+});
 
 // Component
 const App = () => {
@@ -14,38 +26,44 @@ const App = () => {
 	return(
 		<Router>
 
-			{/* Layout will render specific components matching the route, 
-			with the MainNavigation component above */}
-			<Layout>
-				<Switch>
+			{/* Suspense for lazyloading */}
+			<Suspense fallback={ <div className="centered"><LoadingSpinner/></div> }>
 
-					{/* Home to quotes redirect */}
-					<Route path="/" exact>
-						<Redirect to="/quotes?sort=asc"/>
-					</Route>
-					{/* Home */}
+				{/* Layout will render specific components matching the route, 
+				with the MainNavigation component above */}
+				<Layout>
+					<Switch>
 
-					{/* Quotes */}
-					<Route path="/quotes" exact>
-						<AllQuotes/>
-					</Route>
-					<Route path="/quotes/:quoteId">
-						<QuoteDetail/>
-					</Route>
-					<Route path="/new-quote">
-						<NewQuote/>
-					</Route>
-					{/* Quotes */}
+						{/* Home to quotes redirect */}
+						<Route path="/" exact>
+							<Redirect to="/quotes?sort=asc"/>
+						</Route>
+						{/* Home */}
 
-					{/* 404 */}
-					<Route path="*">
-						<NotFound/>
-					</Route>
-					{/* 404 */}
+						{/* Quotes */}
+						<Route path="/quotes" exact>
+							<AllQuotes/>
+						</Route>
+						<Route path="/quotes/:quoteId">
+							<QuoteDetail/>
+						</Route>
+						<Route path="/new-quote">
+							<NewQuote/>
+						</Route>
+						{/* Quotes */}
 
-				</Switch>
-			</Layout>
-			{/* Layout */}
+						{/* 404 */}
+						<Route path="*">
+							<NotFound/>
+						</Route>
+						{/* 404 */}
+
+					</Switch>
+				</Layout>
+				{/* Layout */}
+
+			</Suspense>
+			{/* Suspense for lazyloading */}
 
 		</Router>
 	);
